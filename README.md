@@ -1,2 +1,3 @@
-# taller-flores
-Crea tu galaxia de flores amarillas
+# Taller de Flores Amarillas
+
+Crea tu campo de girasoles y dedícaselo a tu persona favorita.

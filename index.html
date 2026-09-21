@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050b1c">
+<title>Taller de Flores Amarillas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+
+  :root{
+    --negro:#050b1c; --panel:#0b1430; --panel2:#111c3e; --linea:rgba(245,196,81,.22); --linea2:rgba(245,196,81,.5);
+    --oro:#f5c451; --oro-2:#c98a1a; --crema:#fff3d6; --texto:#e9e2d2; --apagado:#9ba4c0; --error:#ff9a9a; --ok:#a8e8b0;
+    --manuscrita:'Caveat','Segoe Script','Bradley Hand',cursive; --cuerpo:'Nunito','Segoe UI',system-ui,sans-serif;
+    color-scheme:dark;
+  }
+  html{height:100%}
+  body{margin:0;min-height:100%;background:var(--negro);color:var(--texto);font-family:var(--cuerpo);font-size:16px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(60% 45% at 50% 0%,rgba(245,196,81,.16),transparent 70%),radial-gradient(40% 30% at 90% 100%,rgba(72,110,255,.14),transparent 70%),var(--negro)}
+  [hidden]{display:none!important}
+  *,*::before,*::after{box-sizing:border-box}
+  .manuscrita{font-family:var(--manuscrita);font-weight:700;color:var(--oro);text-shadow:0 0 18px rgba(245,196,81,.35),0 2px 6px rgba(0,0,0,.6)}
+  .eyebrow{margin:0;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,243,214,.7)}
+  h1,h2,h3{text-wrap:balance}
+  p{margin:0}
+  a{color:var(--oro)}
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:2px solid var(--oro);outline-offset:2px}
+
+  /* ---- controles ---- */
+  label{display:block;font-size:.85rem;font-weight:700;color:var(--crema);margin-bottom:.35em}
+  label small{font-weight:400;color:var(--apagado)}
+  input[type=text],input[type=email],input[type=password],textarea{
+    width:100%;background:var(--panel2);border:1px solid var(--linea);color:var(--crema);border-radius:12px;padding:.7em .9em;font:inherit;font-size:1rem;line-height:1.4}
+  input::placeholder,textarea::placeholder{color:rgba(155,164,192,.7)}
+  input:focus,textarea:focus{outline:none;border-color:var(--linea2);box-shadow:0 0 0 3px rgba(245,196,81,.15)}
+  textarea{resize:vertical;min-height:4.6em}
+  .boton{display:inline-flex;align-items:center;justify-content:center;gap:.5em;border:0;border-radius:999px;padding:.75em 1.4em;font-weight:700;
+    background:linear-gradient(180deg,#f8d275,#dfa628);color:#2b1c00;box-shadow:0 6px 20px rgba(245,196,81,.25);transition:transform .15s,box-shadow .15s}
+  .boton:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,196,81,.35)}
+  .boton:disabled{opacity:.55;cursor:default;transform:none;box-shadow:none}
+  .boton.sec{background:transparent;color:var(--crema);border:1px solid var(--linea2);box-shadow:none}
+  .boton.chico{padding:.45em .9em;font-size:.85rem}
+  .enlace{background:none;border:0;padding:.3em 0;color:var(--apagado);text-decoration:underline;text-underline-offset:3px}
+  .enlace:hover{color:var(--crema)}
+  .error{color:var(--error);font-size:.9rem}
+  .ok{color:var(--ok);font-size:.9rem}
+  .nota{font-size:.85rem;color:var(--apagado)}
+  .contador{float:right;font-weight:400;color:var(--apagado);font-variant-numeric:tabular-nums;font-size:.75rem}
+
+  /* ---- pantallas centradas (acceso / admin) ---- */
+  .pantalla{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+  .caja{width:min(100%,440px);background:var(--panel);border:1px solid var(--linea);border-radius:22px;padding:28px 24px;box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center}
+  .caja.ancha{width:min(100%,560px);text-align:left}
+  .caja form{display:grid;gap:14px;text-align:left;margin-top:18px}
+  .caja h1{margin:.1em 0 0;font-size:clamp(2.4rem,9vw,3.2rem);line-height:1}
+  .caja .intro{color:var(--texto);margin-top:.6em}
+  .girasol{width:84px;height:84px;margin:0 auto 10px;filter:drop-shadow(0 8px 16px rgba(245,196,81,.25))}
+
+  /* ---- taller ---- */
+  #taller{max-width:1180px;margin:0 auto;padding:18px 16px 110px}
+  .barra{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;padding-bottom:16px;border-bottom:1px solid var(--linea)}
+  .barra h1{margin:0;font-size:clamp(2rem,6vw,2.8rem);line-height:1}
+  .barra h1 span{color:var(--crema)}
+  .quien{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--apagado)}
+  .chip{display:inline-flex;align-items:center;gap:.4em;background:var(--panel2);border:1px solid var(--linea);border-radius:999px;padding:.3em .8em;color:var(--crema);font-weight:600}
+  .chip i{width:.55em;height:.55em;border-radius:50%;background:var(--oro);display:inline-block}
+  .dos{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;margin-top:8px}
+  .editor{display:grid;gap:4px;min-width:0}
+  .grupo{padding-block:20px;border-bottom:1px solid var(--linea)}
+  .grupo:last-of-type{border-bottom:0}
+  .grupo h2{margin:0 0 .15em;font-size:1.8rem;line-height:1}
+  .grupo .nota{margin-bottom:14px}
+  .campos{display:grid;gap:14px}
+  .fila{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  .frases{display:grid;gap:10px;grid-template-columns:1fr 1fr;counter-reset:frase}
+  .frases label{position:relative;margin:0}
+  .frases label::before{counter-increment:frase;content:counter(frase);position:absolute;left:.9em;top:50%;transform:translateY(-50%);font-size:.75rem;color:var(--oro-2);font-weight:700}
+  .frases input{padding-left:2.3em}
+  .tarjeta{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:16px;display:grid;gap:12px}
+  .tarjeta h3{margin:0;font-size:1rem;color:var(--oro);display:flex;justify-content:space-between;align-items:center}
+  .ramos{display:flex;gap:8px;flex-wrap:wrap}
+  .ramos input{position:absolute;opacity:0;width:0;height:0}
+  .ramos span{display:inline-flex;align-items:center;gap:.4em;padding:.4em .9em;border-radius:999px;border:1px solid var(--linea);background:var(--panel2);color:var(--crema);font-size:.9rem;cursor:pointer}
+  .ramos input:checked+span{border-color:var(--oro);background:rgba(245,196,81,.16);box-shadow:0 0 0 1px var(--oro) inset}
+  .ramos input:focus-visible+span{outline:2px solid var(--oro);outline-offset:2px}
+
+  /* vista previa (teléfono) */
+  .previa{display:none}
+  .telefono{width:300px;max-width:100%;aspect-ratio:9/19;margin:0 auto;border-radius:34px;border:7px solid #1a2547;background:#000;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(245,196,81,.15)}
+  .telefono iframe{width:100%;height:100%;border:0;display:block;background:#000}
+  .previa .nota{text-align:center;margin-top:12px}
+  .previa .acciones{display:flex;justify-content:center;gap:8px;margin-top:12px}
+  @media (min-width:960px){
+    .dos{grid-template-columns:minmax(0,1fr) 340px;gap:40px}
+    .previa{display:block;position:sticky;top:18px;align-self:start}
+    #btnVista{display:none}
+  }
+  @media (max-width:560px){ .fila,.frases{grid-template-columns:1fr} }
+
+  /* barra fija de acciones */
+  .pie{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(180deg,rgba(5,11,28,0),rgba(5,11,28,.92) 40%)}
+  .pie .boton{flex:1 1 0;max-width:280px}
+
+  /* visor de vista previa en pantalla completa (móvil) */
+  #visor{position:fixed;inset:0;z-index:40;background:#000;display:grid;grid-template-rows:auto 1fr}
+  #visor .cabecera{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:var(--negro);border-bottom:1px solid var(--linea)}
+  #visor .marco{position:relative;min-height:0}
+  #visor iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+
+  /* admin */
+  .lista{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .lista li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--panel2);border:1px solid var(--linea);border-radius:12px;padding:.55em .9em}
+  .lista li b{font-weight:600;color:var(--crema)}
+  .lista li small{color:var(--apagado)}
+  .lista .quitar{background:none;border:0;color:var(--apagado);font-size:1.2rem;line-height:1;padding:.2em .4em;border-radius:8px}
+  .lista .quitar:hover{color:var(--error);background:rgba(255,154,154,.1)}
+  .bloque{margin-top:22px;padding-top:18px;border-top:1px solid var(--linea)}
+  .bloque h2{margin:0 0 .3em;font-size:1.6rem;line-height:1}
+  .caja.ancha form{margin-top:12px}
+  .caja.ancha .fila{align-items:end}
+  .respaldo textarea{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;min-height:7em}
+
+  /* aviso (toast) */
+  #aviso{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);z-index:60;max-width:min(92vw,480px);
+    background:var(--crema);color:#1a1200;border-radius:14px;padding:.75em 1.1em;font-weight:600;box-shadow:0 12px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+  #aviso.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+  #aviso.mal{background:#ffd9d9;color:#5a0000}
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="flor">
+      <g id="pet"><ellipse cx="50" cy="16" rx="7.5" ry="16" fill="#f5c451"/></g>
+      <use href="#pet" transform="rotate(30 50 50)"/><use href="#pet" transform="rotate(60 50 50)"/><use href="#pet" transform="rotate(90 50 50)"/>
+      <use href="#pet" transform="rotate(120 50 50)"/><use href="#pet" transform="rotate(150 50 50)"/><use href="#pet" transform="rotate(180 50 50)"/>
+      <use href="#pet" transform="rotate(210 50 50)"/><use href="#pet" transform="rotate(240 50 50)"/><use href="#pet" transform="rotate(270 50 50)"/>
+      <use href="#pet" transform="rotate(300 50 50)"/><use href="#pet" transform="rotate(330 50 50)"/>
+      <circle cx="50" cy="50" r="17" fill="#6b3a12"/><circle cx="50" cy="50" r="12" fill="#3f2108"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- ============ ACCESO ============ -->
+<div id="acceso" class="pantalla">
+  <div class="caja">
+    <svg class="girasol" viewBox="0 0 100 100" aria-hidden="true"><use href="#flor"/></svg>
+    <p class="eyebrow">Taller de Flores Amarillas</p>
+    <h1 class="manuscrita">Crea tu campo de girasoles</h1>
+    <p class="intro">Dedícale un campo de girasoles a tu persona favorita: cambia el nombre, las frases y las tarjetas, míralo en vivo y descárgalo para enviárselo.</p>
+    <form id="formAcceso">
+      <div>
+        <label for="correo">Tu correo</label>
+        <input id="correo" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
+      </div>
+      <button class="boton" type="submit">Entrar al taller</button>
+      <p id="errAcceso" class="error" hidden></p>
+      <p class="nota">Solo entran los correos que David haya agregado. Si el tuyo no entra, pídele que te agregue.</p>
+    </form>
+    <button type="button" id="irAdmin" class="enlace" style="margin-top:14px">Administrar accesos</button>
+  </div>
+</div>
+
+<!-- ============ ADMINISTRACIÓN ============ -->
+<div id="admin" class="pantalla" hidden>
+  <div class="caja ancha">
+    <p class="eyebrow">Administración</p>
+    <h1 class="manuscrita">Accesos al taller</h1>
+    <form id="formClave">
+      <div>
+        <label for="clave">Clave de administrador</label>
+        <input id="clave" type="password" autocomplete="current-password" required>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="boton" type="submit">Abrir panel</button>
+        <button class="enlace" type="button" id="volverAcceso">Volver</button>
+      </div>
+      <p id="errClave" class="error" hidden></p>
+    </form>
+
+    <div id="panelAdmin" hidden>
+      <p class="nota" style="margin-top:8px">Las personas de esta lista pueden entrar con su correo. Los correos se guardan cifrados: aquí solo se ve el nombre.</p>
+      <div class="bloque">
+        <h2 class="manuscrita">Personas con acceso</h2>
+        <ul id="listaPersonas" class="lista"></ul>
+        <form id="formAgregar">
+          <div class="fila">
+            <div><label for="nuevoNombre">Nombre</label><input id="nuevoNombre" type="text" placeholder="Ana" required maxlength="40"></div>
+            <div><label for="nuevoCorreo">Correo</label><input id="nuevoCorreo" type="email" placeholder="ana@correo.com" required></div>
+          </div>
+          <div><button class="boton sec chico" type="submit">Agregar persona</button></div>
+        </form>
+      </div>
+      <div class="bloque">
+        <h2 class="manuscrita">Clave de administrador</h2>
+        <form id="formNuevaClave">
+          <div class="fila">
+            <div><label for="nuevaClave">Nueva clave <small>(opcional)</small></label><input id="nuevaClave" type="password" autocomplete="new-password" minlength="6" placeholder="mínimo 6 caracteres"></div>
+            <div><button class="boton sec chico" type="submit">Cambiar clave</button></div>
+          </div>
+        </form>
+      </div>
+      <div class="bloque">
+        <h2 class="manuscrita">Guardar cambios</h2>
+        <p class="nota">Los cambios quedan guardados para todos cuando los publicas. Tienes <b id="pendientes">0</b> cambios sin publicar.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px">
+          <button class="boton" type="button" id="publicar">Publicar cambios</button>
+          <button class="boton sec" type="button" id="entrarAdmin">Ir al taller</button>
+        </div>
+        <p id="estadoPublicar" class="nota" style="margin-top:10px" hidden></p>
+        <div id="respaldo" class="respaldo" hidden style="margin-top:12px">
+          <label for="respaldoTxt" id="respaldoTitulo">No se pudo publicar desde aquí. Copia este texto y pégaselo a Claude para que actualice los accesos:</label>
+          <textarea id="respaldoTxt" readonly></textarea>
+          <button class="boton sec chico" type="button" id="copiarRespaldo" style="margin-top:8px">Copiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TALLER ============ -->
+<div id="taller" hidden>
+  <header class="barra">
+    <div>
+      <p class="eyebrow">Taller de Flores Amarillas</p>
+      <h1 class="manuscrita">Un campo de flores para <span id="paraVivo">…</span></h1>
+    </div>
+    <div class="quien">
+      <span class="chip"><i></i><span id="quienNombre"></span></span>
+      <button type="button" class="enlace" id="salir">Salir</button>
+    </div>
+  </header>
+
+  <div class="dos">
+    <form id="formDatos" class="editor" autocomplete="off">
+      <section class="grupo">
+        <h2 class="manuscrita">¿Para quién es?</h2>
+        <p class="nota">Su nombre aparece en la portada y al final.</p>
+        <div class="campos">
+          <div class="fila">
+            <div><label for="para">Nombre de tu persona favorita <span class="contador" data-de="para"></span></label><input id="para" type="text" maxlength="24" placeholder="Valeria" value="Valeria" required></div>
+            <div><label for="firma">Tu firma <span class="contador" data-de="firma"></span></label><input id="firma" type="text" maxlength="40" placeholder="Con cariño, Roberto"></div>
+          </div>
+          <div class="fila">
+            <div><label for="fecha">Fecha <small>(arriba, en la portada)</small></label><input id="fecha" type="text" maxlength="30"></div>
+            <div><label for="ocasion">Ocasión <small>(sello de la carta final)</small></label><input id="ocasion" type="text" maxlength="40"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grupo">
+        <h2 class="manuscrita">Frases en las notitas</h2>
+        <p class="nota">Cuatro frases cortas que cuelgan de las cuerdas de luces. Escribe una barra <b>|</b> donde quieras partir una frase en dos líneas.</p>
+        <div class="frases" id="frases"></div>
+      </section>
+
+      <section class="grupo">
+        <h2 class="manuscrita">Las dos tarjetas</h2>
+        <p class="nota">Cuelgan entre las notitas, con marco dorado; se abren al tocarlas.</p>
+        <div class="campos" id="tarjetas"></div>
+      </section>
+
+      <section class="grupo">
+        <h2 class="manuscrita">Mensaje final</h2>
+        <p class="nota">Es la carta que aparece al amanecer, con los pétalos cayendo.</p>
+        <div class="campos">
+          <div><label for="mensaje">Mensaje <span class="contador" data-de="mensaje"></span></label><textarea id="mensaje" maxlength="170"></textarea></div>
+        </div>
+      </section>
+    </form>
+
+    <aside class="previa" id="previa">
+      <div class="telefono" id="telefono"><iframe id="marco" title="Vista previa de tu campo de girasoles" allow="autoplay"></iframe></div>
+      <p class="nota">Toca la pantalla del teléfono para verla con sonido. Se actualiza sola cuando escribes.</p>
+      <div class="acciones"><button type="button" class="boton sec chico" id="refrescar">Ver desde el inicio</button></div>
+    </aside>
+  </div>
+
+  <div class="pie">
+    <button type="button" class="boton sec" id="btnVista">Vista previa</button>
+    <button type="button" class="boton" id="btnDescargar">Descargar mi página</button>
+  </div>
+</div>
+
+<div id="visor" hidden>
+  <div class="cabecera">
+    <span class="eyebrow">Vista previa</span>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="boton sec chico" id="refrescar2">Desde el inicio</button>
+      <button type="button" class="boton chico" id="cerrarVisor">Volver a editar</button>
+    </div>
+  </div>
+  <div class="marco" id="marcoVisor"></div>
+</div>
+
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<script id="accesos" type="application/json">{"admin": "0d38fd29c176c1667c9513b921d1cb8baf9c97bce826d8216222c05d2691b8cf", "personas": [{"h": "825c67d33b3d6ffe75c6c7e81572cc9b238f949f6ea4ccbc46e134b6a1c2201c", "n": "David"}, {"h": "c6580ef3f74f9a75afafffb92e7085adb903aef3b207acc78796b93988947ee0", "n": "Miguel"}]}</script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const RAMOS = [['girasoles', '🌻 Girasoles'], ['tulipanes', '🌷 Tulipanes']];
+  const RECURSOS = { 'cancion.mp3': 'audio/mpeg' };
+  const PLANTILLA = 'plantilla_campo.html';
+  const EJEMPLO = {
+    para: 'Valeria',
+    fecha: '21 de septiembre', ocasion: 'Feliz Día de las Flores Amarillas',
+    frases: ['Eres mi sol|de cada día', 'Gracias por ser|mi lugar seguro', 'Que nunca dejes|de brillar', 'Una flor amarilla|por cada sonrisa tuya'],
+    tarjetas: [{ ramo: 'girasoles', titulo: 'Un sol para ti', texto: 'Porque iluminas cada día con tu forma de ser.' },
+               { ramo: 'tulipanes', titulo: 'Que florezcas', texto: 'Que todo lo que sueñas encuentre su primavera.' }],
+    mensaje: 'Que hoy te lleguen muchas flores amarillas y que nunca te falten motivos para sonreír.'
+  };
+  let ACC = { admin: '', personas: [] };
+  try { ACC = JSON.parse($('#accesos').textContent); } catch (e) {}
+  // en un sitio propio (GitHub Pages) la lista vive en accesos.json, que David edita sin tocar la página
+  const accesosListos = (async () => {
+    try { const r = await fetch('accesos.json', { cache: 'no-store' }); if (r.ok) { const j = await r.json(); if (j && j.personas) ACC = j; } } catch (e) {}
+  })();
+
+  // ---------- utilidades ----------
+  const usar = async n => { try { return window.claude && window.claude.use ? await window.claude.use(n) : null; } catch (e) { return null; } };
+  async function sha(s) {
+    const b = new TextEncoder().encode(s);
+    const h = await crypto.subtle.digest('SHA-256', b);
+    return [...new Uint8Array(h)].map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  const normalizar = c => c.trim().toLowerCase();
+  const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const cargar = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+  const borrar = k => { try { localStorage.removeItem(k); } catch (e) {} };
+  let tAviso = 0;
+  function aviso(txt, mal) {
+    const a = $('#aviso'); a.textContent = txt; a.classList.toggle('mal', !!mal); a.classList.add('ver');
+    clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove('ver'), mal ? 6000 : 3500);
+  }
+  function mostrar(id) {
+    ['acceso', 'admin', 'taller', 'visor'].forEach(p => { $('#' + p).hidden = p !== id; });
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- acceso ----------
+  let yo = null;   // { h, n }
+  $('#formAcceso').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('#errAcceso'); err.hidden = true;
+    const correo = normalizar($('#correo').value);
+    if (!correo) return;
+    await accesosListos;
+    let h = '';
+    try { h = await sha(correo); } catch (x) { err.textContent = 'Este navegador no permite verificar el correo. Prueba con Chrome o Safari.'; err.hidden = false; return; }
+    const p = ACC.personas.find(p => p.h === h);
+    if (!p) { err.textContent = 'Ese correo todavía no tiene acceso. Pídele a David que te agregue.'; err.hidden = false; return; }
+    guardar('taller.correo', correo);
+    entrar(p);
+  });
+  $('#salir').addEventListener('click', () => { borrar('taller.correo'); yo = null; $('#correo').value = ''; mostrar('acceso'); });
+
+  // ---------- administración ----------
+  let accAdmin = null, pendientes = 0;
+  $('#irAdmin').addEventListener('click', () => { mostrar('admin'); $('#panelAdmin').hidden = true; $('#clave').focus(); });
+  $('#volverAcceso').addEventListener('click', () => mostrar('acceso'));
+  $('#formClave').addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = $('#errClave'); err.hidden = true;
+    await accesosListos;
+    if (await sha($('#clave').value) !== ACC.admin) { err.textContent = 'Clave incorrecta.'; err.hidden = false; return; }
+    accAdmin = JSON.parse(JSON.stringify(ACC)); pendientes = 0;
+    $('#formClave').hidden = true; $('#panelAdmin').hidden = false; pintarPersonas();
+  });
+  function pintarPersonas() {
+    const ul = $('#listaPersonas'); ul.innerHTML = '';
+    if (!accAdmin.personas.length) { const li = document.createElement('li'); li.innerHTML = '<small>Todavía no hay nadie.</small>'; ul.appendChild(li); }
+    accAdmin.personas.forEach((p, i) => {
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = p.n; li.appendChild(b);
+      const q = document.createElement('button'); q.type = 'button'; q.className = 'quitar'; q.title = 'Quitar'; q.setAttribute('aria-label', 'Quitar a ' + p.n); q.textContent = '×';
+      q.addEventListener('click', () => { accAdmin.personas.splice(i, 1); cambio(); pintarPersonas(); });
+      li.appendChild(q); ul.appendChild(li);
+    });
+    $('#pendientes').textContent = pendientes;
+  }
+  function cambio() { pendientes++; $('#pendientes').textContent = pendientes; $('#respaldo').hidden = true; }
+  $('#formAgregar').addEventListener('submit', async e => {
+    e.preventDefault();
+    const n = $('#nuevoNombre').value.trim(), c = normalizar($('#nuevoCorreo').value);
+    if (!n || !c) return;
+    const h = await sha(c);
+    if (accAdmin.personas.some(p => p.h === h)) { aviso('Ese correo ya está en la lista.', true); return; }
+    accAdmin.personas.push({ h, n }); cambio(); pintarPersonas();
+    $('#nuevoNombre').value = ''; $('#nuevoCorreo').value = ''; $('#nuevoNombre').focus();
+  });
+  $('#formNuevaClave').addEventListener('submit', async e => {
+    e.preventDefault();
+    const v = $('#nuevaClave').value;
+    if (v.length < 6) { aviso('La clave debe tener al menos 6 caracteres.', true); return; }
+    accAdmin.admin = await sha(v); $('#nuevaClave').value = ''; cambio(); aviso('Clave cambiada. Recuerda publicar los cambios.');
+  });
+  $('#publicar').addEventListener('click', async () => {
+    const btn = $('#publicar'), est = $('#estadoPublicar');
+    btn.disabled = true; est.hidden = false; est.className = 'nota'; est.textContent = 'Publicando…'; $('#respaldo').hidden = true;
+    try {
+      const art = await usar('artifact');
+      if (!art) throw { code: 'unavailable' };
+      const r = await fetch('taller.src.html', { cache: 'no-store' });
+      if (!r.ok) throw { code: 'sin_fuente' };
+      const src = await r.text();
+      const bloque = '<script id="accesos" type="application/json">' + JSON.stringify(accAdmin).replace(/</g, '\\u003c') + '<\/script>';
+      const html = src.replace(/<script id="accesos"[^>]*>[\s\S]*?<\/script>/, bloque);
+      if (html === src) throw { code: 'sin_bloque' };
+      try { sessionStorage.setItem('taller.publicado', '1'); } catch (e) {}
+      await art.publish(html);
+      est.textContent = 'Publicado. La página se está actualizando…';
+    } catch (e) {
+      const code = e && e.code || 'unavailable';
+      est.className = 'error';
+      if (code === 'unavailable' && !window.claude) est.textContent = 'Aquí la página no puede publicarse sola; sigue las instrucciones de abajo.';
+      else if (code === 'not_writer' || code === 'not_granted') est.textContent = 'Solo el dueño del enlace (David, con su sesión de Claude abierta) puede publicar desde aquí.';
+      else if (code === 'conflict') est.textContent = 'Alguien publicó otra versión hace un momento; la página se va a recargar. Vuelve a hacer los cambios.';
+      else if (code === 'rate_limited') est.textContent = 'Demasiados cambios seguidos. Espera un minuto y vuelve a intentar.';
+      else est.textContent = 'No se pudo publicar desde aquí (' + code + ').';
+      $('#respaldoTxt').value = JSON.stringify(accAdmin, null, 2); $('#respaldo').hidden = false;
+      $('#respaldoTitulo').textContent = window.claude
+        ? 'No se pudo publicar desde aquí. Copia este texto y pégaselo a Claude para que actualice los accesos:'
+        : 'En este sitio los accesos se guardan en el archivo accesos.json. Copia este texto y reemplaza con él todo el contenido de ese archivo (en GitHub: abrir accesos.json → lápiz → pegar → Commit changes):';
+      btn.disabled = false;
+    }
+  });
+  $('#copiarRespaldo').addEventListener('click', async () => {
+    const t = $('#respaldoTxt'); t.select();
+    try { await navigator.clipboard.writeText(t.value); aviso('Copiado.'); } catch (e) { document.execCommand && document.execCommand('copy'); aviso('Copiado.'); }
+  });
+  $('#entrarAdmin').addEventListener('click', () => entrar({ h: 'admin', n: 'David' }));
+
+  // ---------- taller: formulario ----------
+  const F = $('#formDatos');
+  function armarFormulario() {
+    const fr = $('#frases');
+    EJEMPLO.frases.forEach((f, i) => {
+      const l = document.createElement('label'); l.setAttribute('aria-label', 'Frase ' + (i + 1));
+      const inp = document.createElement('input'); inp.type = 'text'; inp.id = 'frase' + i; inp.maxLength = 40; inp.placeholder = f; inp.value = f;
+      l.appendChild(inp); fr.appendChild(l);
+    });
+    const tj = $('#tarjetas');
+    EJEMPLO.tarjetas.forEach((t, i) => {
+      const d = document.createElement('div'); d.className = 'tarjeta';
+      d.innerHTML = `<h3>Tarjeta ${i + 1}</h3>
+        <div class="ramos" role="radiogroup" aria-label="Ramo de la tarjeta ${i + 1}"></div>
+        <div><label for="tit${i}">Título <span class="contador" data-de="tit${i}"></span></label><input id="tit${i}" type="text" maxlength="30"></div>
+        <div><label for="txt${i}">Texto <span class="contador" data-de="txt${i}"></span></label><textarea id="txt${i}" maxlength="120"></textarea></div>`;
+      const ramos = d.querySelector('.ramos');
+      RAMOS.forEach(([v, et]) => {
+        const l = document.createElement('label'); l.style.margin = 0;
+        const r = document.createElement('input'); r.type = 'radio'; r.name = 'ramo' + i; r.value = v; r.id = 'ramo' + i + v; r.checked = v === t.ramo;
+        const s = document.createElement('span'); s.textContent = et;
+        l.appendChild(r); l.appendChild(s); ramos.appendChild(l);
+      });
+      d.querySelector('#tit' + i).value = t.titulo; d.querySelector('#txt' + i).value = t.texto;
+      tj.appendChild(d);
+    });
+    $('#fecha').value = EJEMPLO.fecha; $('#ocasion').value = EJEMPLO.ocasion; $('#mensaje').value = EJEMPLO.mensaje;
+  }
+  function contadores() {
+    $$('.contador').forEach(c => { const el = document.getElementById(c.dataset.de); if (el) c.textContent = el.value.length + '/' + el.maxLength; });
+  }
+  function leerFormulario() {
+    return {
+      para: $('#para').value.trim(), firma: $('#firma').value.trim(), fecha: $('#fecha').value.trim(), ocasion: $('#ocasion').value.trim(),
+      frases: EJEMPLO.frases.map((f, i) => $('#frase' + i).value.trim()),
+      tarjetas: EJEMPLO.tarjetas.map((t, i) => ({ ramo: (F.querySelector('input[name=ramo' + i + ']:checked') || {}).value || t.ramo, titulo: $('#tit' + i).value.trim(), texto: $('#txt' + i).value.trim() })),
+      mensaje: $('#mensaje').value.trim()
+    };
+  }
+  function escribirFormulario(d) {
+    if (!d) return;
+    const set = (id, v) => { if (v != null) $('#' + id).value = v; };
+    set('para', d.para); set('firma', d.firma); set('fecha', d.fecha); set('ocasion', d.ocasion); set('mensaje', d.mensaje);
+    (d.frases || []).forEach((f, i) => set('frase' + i, f));
+    (d.tarjetas || []).forEach((t, i) => { set('tit' + i, t.titulo); set('txt' + i, t.texto); const r = F.querySelector('#ramo' + i + t.ramo); if (r) r.checked = true; });
+  }
+  // datos completos para la página: lo vacío toma el ejemplo (menos el nombre, que sí hace falta)
+  function datosCompletos(paraPrevia) {
+    const d = leerFormulario();
+    return {
+      para: d.para || (paraPrevia ? '…' : ''),
+      firma: d.firma || 'Con cariño', fecha: d.fecha || EJEMPLO.fecha, ocasion: d.ocasion || EJEMPLO.ocasion,
+      frases: d.frases.map((f, i) => f || EJEMPLO.frases[i]),
+      tarjetas: d.tarjetas.map((t, i) => ({ ramo: t.ramo, titulo: t.titulo || EJEMPLO.tarjetas[i].titulo, texto: t.texto || EJEMPLO.tarjetas[i].texto })),
+      mensaje: d.mensaje || EJEMPLO.mensaje
+    };
+  }
+
+  // ---------- vista previa ----------
+  const marco = $('#marco');
+  let nPrevia = 0, tPrevia = 0;
+  function pintarPrevia() {
+    const d = datosCompletos(true);
+    marco.src = PLANTILLA + '?v=' + (++nPrevia) + '#datos=' + encodeURIComponent(JSON.stringify(d));
+  }
+  function previaPronto() { clearTimeout(tPrevia); tPrevia = setTimeout(pintarPrevia, 1200); }
+  $('#refrescar').addEventListener('click', pintarPrevia);
+  $('#refrescar2').addEventListener('click', pintarPrevia);
+  $('#btnVista').addEventListener('click', () => { $('#marcoVisor').appendChild(marco); $('#visor').hidden = false; document.body.style.overflow = 'hidden'; pintarPrevia(); });
+  $('#cerrarVisor').addEventListener('click', () => { $('#visor').hidden = true; document.body.style.overflow = ''; $('#telefono').appendChild(marco); if (matchMedia('(min-width:960px)').matches) pintarPrevia(); else marco.removeAttribute('src'); });
+
+  F.addEventListener('input', () => {
+    contadores();
+    $('#paraVivo').textContent = $('#para').value.trim() || '…';
+    if (yo) guardar('taller.borrador.' + yo.h, leerFormulario());
+    if (matchMedia('(min-width:960px)').matches || !$('#visor').hidden) previaPronto();
+  });
+  F.addEventListener('submit', e => e.preventDefault());
+
+  function entrar(p) {
+    yo = p;
+    $('#quienNombre').textContent = p.n;
+    const borrador = cargar('taller.borrador.' + p.h);
+    if (borrador) escribirFormulario(borrador);
+    else if (!$('#firma').value) $('#firma').value = 'Con cariño, ' + p.n;
+    contadores(); $('#paraVivo').textContent = $('#para').value.trim() || '…';
+    mostrar('taller');
+    if (matchMedia('(min-width:960px)').matches) pintarPrevia();
+  }
+
+  // ---------- descarga ----------
+  let recursos = null;
+  const aDataURI = (blob, mime) => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => { const s = r.result; res('data:' + mime + s.slice(s.indexOf(';'))); };
+    r.onerror = () => rej(new Error('lectura')); r.readAsDataURL(blob);
+  });
+  async function cargarRecursos() {
+    if (recursos) return recursos;
+    const r = await fetch(PLANTILLA); if (!r.ok) throw new Error('plantilla');
+    const tpl = await r.text(), uris = {};
+    await Promise.all(Object.entries(RECURSOS).map(async ([f, mime]) => {
+      const x = await fetch(f); if (!x.ok) throw new Error(f);
+      uris[f] = await aDataURI(await x.blob(), mime);
+    }));
+    recursos = { tpl, uris }; return recursos;
+  }
+  function construirHTML(d) {
+    let html = recursos.tpl;
+    for (const f in recursos.uris) html = html.split('src="' + f + '"').join('src="' + recursos.uris[f] + '"');
+    const bloque = '<script id="datos" type="application/json">' + JSON.stringify(d).replace(/</g, '\\u003c') + '<\/script>';
+    html = html.replace(/<script id="datos"[^>]*>[\s\S]*?<\/script>/, () => bloque);
+    const tit = document.createElement('div'); tit.textContent = 'Flores amarillas para ' + d.para;
+    html = html.replace(/<title>[^<]*<\/title>/, '<title>' + tit.innerHTML + '</title>');
+    return html;
+  }
+  $('#btnDescargar').addEventListener('click', async () => {
+    const btn = $('#btnDescargar');
+    const d = datosCompletos(false);
+    if (!d.para) { aviso('Escribe el nombre de tu persona favorita.', true); $('#para').focus(); return; }
+    btn.disabled = true; btn.textContent = 'Preparando tu página…';
+    try {
+      await cargarRecursos();
+      const html = construirHTML(d);
+      const nombre = ('Flores amarillas para ' + d.para.replace(/[\\/:*?"<>|]/g, '').trim() + '.html');
+      const dl = await usar('downloads');
+      if (dl) {
+        await dl.save({ filename: nombre, data: new Blob([html], { type: 'text/html' }) });
+        aviso('¡Lista! Ahora envíale el archivo a ' + d.para + ' por WhatsApp o correo.');
+      } else if (!window.claude) {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' })); a.download = nombre;
+        document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+        aviso('¡Lista! Ahora envíale el archivo a ' + d.para + '.');
+      } else aviso('La descarga no está disponible en esta vista. Abre el enlace en tu navegador.', true);
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'declined') aviso('Descarga cancelada.');
+      else if (code === 'rate_limited') aviso('Espera un momento y vuelve a intentar.', true);
+      else aviso('No se pudo preparar la página (' + (code || (e && e.message) || 'error') + '). Revisa tu conexión e inténtalo de nuevo.', true);
+    }
+    btn.disabled = false; btn.textContent = 'Descargar mi página';
+  });
+
+  // ---------- arranque ----------
+  armarFormulario(); contadores();
+  try { if (sessionStorage.getItem('taller.publicado')) { sessionStorage.removeItem('taller.publicado'); aviso('Accesos publicados.'); } } catch (e) {}
+  (async () => {
+    const correo = cargar('taller.correo');
+    if (!correo) return;
+    await accesosListos;
+    try { const h = await sha(correo); const p = ACC.personas.find(p => p.h === h); if (p) entrar(p); else borrar('taller.correo'); } catch (e) {}
+  })();
+})();
+</script>
+
+</body>
+</html>
