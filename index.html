@@ -109,6 +109,7 @@ img{max-width:100%}
   .pie{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
     background:linear-gradient(180deg,rgba(5,11,28,0),rgba(5,11,28,.92) 40%)}
   .pie .boton{flex:1 1 0;max-width:280px}
+  .pie .boton.sec{flex:0 1 auto}
 
   /* visor de vista previa en pantalla completa (móvil) */
   #visor{position:fixed;inset:0;z-index:40;background:#000;display:grid;grid-template-rows:auto 1fr}
@@ -298,7 +299,22 @@ img{max-width:100%}
 
   <div class="pie">
     <button type="button" class="boton sec" id="btnVista">Vista previa</button>
-    <button type="button" class="boton" id="btnDescargar">Descargar mi página</button>
+    <button type="button" class="boton" id="btnEnlace" hidden>Crear enlace 🔗</button>
+    <button type="button" class="boton sec" id="btnDescargar">Descargar</button>
+  </div>
+
+  <div id="enlaceCaja" class="pantalla" hidden style="position:fixed;inset:0;z-index:50;background:rgba(5,11,28,.85);backdrop-filter:blur(6px)">
+    <div class="caja">
+      <p class="eyebrow">Tu enlace está listo</p>
+      <h1 class="manuscrita">Envíaselo 💛</h1>
+      <p class="intro">Este enlace abre la página en cualquier celular (iPhone o Android), sin descargar nada.</p>
+      <input id="enlaceTxt" type="text" readonly style="margin-top:14px;text-align:center;font-size:.9rem">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px">
+        <button type="button" class="boton" id="copiarEnlace">Copiar enlace</button>
+        <button type="button" class="boton sec" id="compartirEnlace" hidden>Compartir</button>
+      </div>
+      <button type="button" class="enlace" id="cerrarEnlace" style="margin-top:14px">Volver al taller</button>
+    </div>
   </div>
 </div>
 
@@ -557,7 +573,7 @@ img{max-width:100%}
     const u = $('#usosTxt');
     if (!yo || yo.max == null) { u.hidden = true; return; }
     const quedan = Math.max(0, yo.max - yo.usos);
-    u.textContent = quedan === 1 ? 'Te queda 1 descarga' : 'Te quedan ' + quedan + ' descargas'; u.hidden = false;
+    u.textContent = quedan === 1 ? 'Te queda 1 página' : 'Te quedan ' + quedan + ' páginas'; u.hidden = false;
   }
   function entrar(p) {
     yo = p;
@@ -569,6 +585,44 @@ img{max-width:100%}
     mostrar('taller');
     if (matchMedia('(min-width:960px)').matches) pintarPrevia();
   }
+
+  // ---------- enlace corto (con servidor): guarda los textos en la hoja y arma la URL de ver.html ----------
+  if (SERVIDOR) { $('#btnEnlace').hidden = false; }
+  async function servidorDatos(accion, correo, datos) {
+    const r = await fetch(SERVIDOR, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ accion, correo, datos }) });
+    if (!r.ok) throw new Error('http ' + r.status);
+    return r.json();
+  }
+  $('#btnEnlace').addEventListener('click', async () => {
+    const btn = $('#btnEnlace');
+    const d = datosCompletos(false);
+    if (!d.para) { aviso('Escribe el nombre de tu persona favorita.', true); $('#para').focus(); return; }
+    btn.disabled = true; btn.textContent = 'Creando enlace…';
+    try {
+      let r = await servidorDatos('guardar', yo.correo, d);
+      if (r.ok && !r.id) { aviso('Falta actualizar el script de la hoja de Google (acción guardar).', true); r = { ok: false, motivo: 'servidor_viejo' }; }
+      if (!r.ok) {
+        if (r.motivo === 'agotado') { yo.usos = r.usos; yo.max = r.max; pintarUsos(); aviso('Ya usaste tus ' + r.max + ' páginas. Pídele a David otra oportunidad.', true); }
+        else aviso('No se pudo crear el enlace (' + (r.motivo || 'error') + ').', true);
+      } else {
+        yo.usos = r.usos; yo.max = r.max; pintarUsos();
+        const base = location.href.split(/[?#]/)[0].replace(/[^/]*$/, '');
+        const url = base + 'ver.html?id=' + r.id;
+        $('#enlaceTxt').value = url; $('#enlaceCaja').hidden = false;
+        $('#compartirEnlace').hidden = !navigator.share;
+      }
+    } catch (e) { aviso('No se pudo conectar. Revisa tu internet e inténtalo de nuevo.', true); }
+    btn.disabled = false; btn.textContent = 'Crear enlace 🔗';
+  });
+  $('#copiarEnlace').addEventListener('click', async () => {
+    const t = $('#enlaceTxt'); t.select();
+    try { await navigator.clipboard.writeText(t.value); aviso('Enlace copiado. Pégalo en WhatsApp.'); } catch (e) { document.execCommand && document.execCommand('copy'); aviso('Enlace copiado.'); }
+  });
+  $('#compartirEnlace').addEventListener('click', async () => {
+    const d = datosCompletos(false);
+    try { await navigator.share({ title: 'Flores amarillas para ' + d.para, text: 'Tienes un regalo de flores amarillas 🌻 Ábrelo, sube el volumen y toca la pantalla:', url: $('#enlaceTxt').value }); } catch (e) {}
+  });
+  $('#cerrarEnlace').addEventListener('click', () => { $('#enlaceCaja').hidden = true; });
 
   // ---------- descarga ----------
   let recursos = null;
@@ -607,7 +661,7 @@ img{max-width:100%}
       if (SERVIDOR) {
         const r = await servidor('usar', yo.correo);
         if (!r.ok) {
-          if (r.motivo === 'agotado') { yo.usos = r.usos; yo.max = r.max; pintarUsos(); aviso('Ya usaste tus ' + r.max + ' descargas. Pídele a David otra oportunidad.', true); }
+          if (r.motivo === 'agotado') { yo.usos = r.usos; yo.max = r.max; pintarUsos(); aviso('Ya usaste tus ' + r.max + ' páginas. Pídele a David otra oportunidad.', true); }
           else aviso('Tu correo ya no tiene acceso. Pídele a David que te agregue.', true);
           btn.disabled = false; btn.textContent = 'Descargar mi página'; return;
         }

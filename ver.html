@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b1f4e">
+<title>Flores amarillas para ti</title>
+<meta property="og:title" content="Tienes un regalo de flores amarillas 🌻">
+<meta property="og:description" content="Ábrelo en tu celular, sube el volumen y toca la pantalla.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito:wght@400;600&display=swap">
+<style>
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box;background:linear-gradient(180deg,#3b2a63,#e0603a 62%,#ffc46b);color:#fff3d6;font-family:'Nunito','Segoe UI',system-ui,sans-serif}
+  .caja{max-width:360px}
+  .flor{width:96px;height:96px;margin:0 auto 10px;animation:girar 6s linear infinite}
+  @keyframes girar{to{transform:rotate(360deg)}}
+  h1{margin:0;font:700 2.6rem 'Caveat','Segoe Script',cursive;color:#fff3d6;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  p{margin:.5em 0 0;font-size:1rem;line-height:1.5;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+  .error{margin-top:1em;background:rgba(0,0,0,.35);border-radius:14px;padding:12px 16px;font-size:.95rem}
+</style>
+</head>
+<body>
+  <div class="caja">
+    <svg class="flor" viewBox="0 0 100 100" aria-hidden="true">
+      <g id="p"><ellipse cx="50" cy="17" rx="8" ry="17" fill="#f5c451"/></g>
+      <use href="#p" transform="rotate(45 50 50)"/><use href="#p" transform="rotate(90 50 50)"/><use href="#p" transform="rotate(135 50 50)"/><use href="#p" transform="rotate(180 50 50)"/><use href="#p" transform="rotate(225 50 50)"/><use href="#p" transform="rotate(270 50 50)"/><use href="#p" transform="rotate(315 50 50)"/>
+      <circle cx="50" cy="50" r="15" fill="#6b3a12"/>
+    </svg>
+    <h1>Preparando tu regalo…</h1>
+    <p id="msg">Un momento 🌻</p>
+  </div>
+<script>
+(() => {
+  const SERVIDOR = 'https://script.google.com/macros/s/AKfycbyCfOBx_LkPSeMEVFjmaM_PqDNCJCRkl2q535rIhhDof-xuOzrNE0Y2H7kUSvPNg2Zf/exec';
+  const id = new URLSearchParams(location.search).get('id') || '';
+  const msg = document.getElementById('msg');
+  function fallo(t) { document.querySelector('h1').textContent = 'No se pudo abrir'; msg.innerHTML = '<div class="error">' + t + '</div>'; }
+  if (!id || !SERVIDOR) { fallo('Este enlace está incompleto. Pídele a quien te lo envió que lo vuelva a mandar.'); return; }
+  fetch(SERVIDOR + '?accion=leer&id=' + encodeURIComponent(id), { cache: 'no-store' })
+    .then(r => r.json())
+    .then(r => {
+      if (!r.ok || !r.datos) { fallo('No encontramos esta página. Revisa que el enlace esté completo.'); return; }
+      location.replace('plantilla_campo.html#datos=' + encodeURIComponent(JSON.stringify(r.datos)));
+    })
+    .catch(() => fallo('No hay conexión. Revisa tu internet y vuelve a abrir el enlace.'));
+})();
+</script>
+</body>
+</html>
