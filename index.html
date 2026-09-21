@@ -178,6 +178,13 @@ img{max-width:100%}
   <div class="caja ancha">
     <p class="eyebrow">Administración</p>
     <h1 class="manuscrita">Accesos al taller</h1>
+    <div id="adminHoja" hidden>
+      <p class="nota" style="margin-top:10px">Los accesos y las descargas se administran en tu hoja de Google: agrega una fila por persona (correo, nombre, usos, máximo) y pon <b>Usos</b> en 0 para dar otra oportunidad.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px">
+        <a id="abrirHoja" class="boton" href="#" target="_blank" rel="noopener">Abrir la hoja</a>
+        <button class="enlace" type="button" id="volverAcceso2">Volver</button>
+      </div>
+    </div>
     <form id="formClave">
       <div>
         <label for="clave">Clave de administrador</label>
@@ -239,6 +246,7 @@ img{max-width:100%}
     </div>
     <div class="quien">
       <span class="chip"><i></i><span id="quienNombre"></span></span>
+      <span id="usosTxt" class="nota" hidden></span>
       <button type="button" class="enlace" id="salir">Salir</button>
     </div>
   </header>
@@ -322,6 +330,13 @@ img{max-width:100%}
                { ramo: 'tulipanes', titulo: 'Que florezcas', texto: 'Que todo lo que sueñas encuentre su primavera.' }],
     mensaje: 'Que hoy te lleguen muchas flores amarillas y que nunca te falten motivos para sonreír.'
   };
+  // Servidor (Apps Script + hoja de Google) que lleva la cuenta de accesos y descargas. Vacío = usar la lista de accesos.json / #accesos.
+  const SERVIDOR = '', HOJA_URL = '';
+  async function servidor(accion, correo) {
+    const r = await fetch(SERVIDOR, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ accion, correo }) });
+    if (!r.ok) throw new Error('http ' + r.status);
+    return r.json();
+  }
   let ACC = { admin: '', personas: [] };
   try { ACC = JSON.parse($('#accesos').textContent); } catch (e) {}
   // en un sitio propio (GitHub Pages) la lista vive en accesos.json, que David edita sin tocar la página
@@ -357,6 +372,17 @@ img{max-width:100%}
     const err = $('#errAcceso'); err.hidden = true;
     const correo = normalizar($('#correo').value);
     if (!correo) return;
+    if (SERVIDOR) {
+      const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+      try {
+        const r = await servidor('entrar', correo);
+        if (!r.ok) { err.textContent = 'Ese correo todavía no tiene acceso. Pídele a David que te agregue.'; err.hidden = false; return; }
+        guardar('taller.correo', correo);
+        entrar({ h: await sha(correo), n: r.nombre, correo, usos: r.usos, max: r.max });
+      } catch (x) { err.textContent = 'No se pudo conectar para verificar tu correo. Revisa tu internet e inténtalo de nuevo.'; err.hidden = false; }
+      finally { btn.disabled = false; }
+      return;
+    }
     await accesosListos;
     let h = '';
     try { h = await sha(correo); } catch (x) { err.textContent = 'Este navegador no permite verificar el correo. Prueba con Chrome o Safari.'; err.hidden = false; return; }
@@ -369,8 +395,13 @@ img{max-width:100%}
 
   // ---------- administración ----------
   let accAdmin = null, pendientes = 0;
-  $('#irAdmin').addEventListener('click', () => { mostrar('admin'); $('#panelAdmin').hidden = true; $('#clave').focus(); });
+  $('#irAdmin').addEventListener('click', () => {
+    mostrar('admin');
+    if (SERVIDOR) { $('#formClave').hidden = true; $('#panelAdmin').hidden = true; $('#adminHoja').hidden = false; if (HOJA_URL) $('#abrirHoja').href = HOJA_URL; else $('#abrirHoja').hidden = true; return; }
+    $('#adminHoja').hidden = true; $('#formClave').hidden = false; $('#panelAdmin').hidden = true; $('#clave').focus();
+  });
   $('#volverAcceso').addEventListener('click', () => mostrar('acceso'));
+  $('#volverAcceso2').addEventListener('click', () => mostrar('acceso'));
   $('#formClave').addEventListener('submit', async e => {
     e.preventDefault();
     const err = $('#errClave'); err.hidden = true;
@@ -522,9 +553,15 @@ img{max-width:100%}
   });
   F.addEventListener('submit', e => e.preventDefault());
 
+  function pintarUsos() {
+    const u = $('#usosTxt');
+    if (!yo || yo.max == null) { u.hidden = true; return; }
+    const quedan = Math.max(0, yo.max - yo.usos);
+    u.textContent = quedan === 1 ? 'Te queda 1 descarga' : 'Te quedan ' + quedan + ' descargas'; u.hidden = false;
+  }
   function entrar(p) {
     yo = p;
-    $('#quienNombre').textContent = p.n;
+    $('#quienNombre').textContent = p.n; pintarUsos();
     const borrador = cargar('taller.borrador.' + p.h);
     if (borrador) escribirFormulario(borrador);
     else if (!$('#firma').value) $('#firma').value = 'Con cariño, ' + p.n;
@@ -567,6 +604,15 @@ img{max-width:100%}
     try {
       await cargarRecursos();
       const html = construirHTML(d);
+      if (SERVIDOR) {
+        const r = await servidor('usar', yo.correo);
+        if (!r.ok) {
+          if (r.motivo === 'agotado') { yo.usos = r.usos; yo.max = r.max; pintarUsos(); aviso('Ya usaste tus ' + r.max + ' descargas. Pídele a David otra oportunidad.', true); }
+          else aviso('Tu correo ya no tiene acceso. Pídele a David que te agregue.', true);
+          btn.disabled = false; btn.textContent = 'Descargar mi página'; return;
+        }
+        yo.usos = r.usos; yo.max = r.max; pintarUsos();
+      }
       const nombre = ('Flores amarillas para ' + d.para.replace(/[\\/:*?"<>|]/g, '').trim() + '.html');
       const dl = await usar('downloads');
       if (dl) {
@@ -592,6 +638,10 @@ img{max-width:100%}
   (async () => {
     const correo = cargar('taller.correo');
     if (!correo) return;
+    if (SERVIDOR) {
+      try { const r = await servidor('entrar', correo); if (r.ok) entrar({ h: await sha(correo), n: r.nombre, correo, usos: r.usos, max: r.max }); else borrar('taller.correo'); } catch (e) {}
+      return;
+    }
     await accesosListos;
     try { const h = await sha(correo); const p = ACC.personas.find(p => p.h === h); if (p) entrar(p); else borrar('taller.correo'); } catch (e) {}
   })();
