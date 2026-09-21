@@ -496,7 +496,7 @@ img{max-width:100%}
     const fr = $('#frases');
     EJEMPLO.frases.forEach((f, i) => {
       const l = document.createElement('label'); l.setAttribute('aria-label', 'Frase ' + (i + 1));
-      const inp = document.createElement('input'); inp.type = 'text'; inp.id = 'frase' + i; inp.maxLength = 40; inp.placeholder = f; inp.value = f;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.id = 'frase' + i; inp.maxLength = 50; inp.placeholder = f; inp.value = f;
       l.appendChild(inp); fr.appendChild(l);
     });
     const tj = $('#tarjetas');

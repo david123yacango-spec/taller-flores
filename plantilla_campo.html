@@ -153,6 +153,7 @@
     return d;
   }
   const DATOS = leerDatos();
+  const RAPIDO = location.hash.indexOf('promo') >= 0;   // transiciones cortas para grabar videos promocionales
   const FRASES = DATOS.frases, TARJETAS = DATOS.tarjetas;
   document.title = 'Flores amarillas para ' + DATOS.para;
   $('#portada .eyebrow').textContent = DATOS.fecha;
@@ -433,8 +434,10 @@
         c.fillText(leidos.has(it.id) ? 'LEÍDA ✓' : 'TOCA PARA ABRIR', 0, hilo + h * 0.85);
         miniFlor(0, hilo + h * 0.28, w * 0.11, Tj.ramo === 'tulipanes');
       } else {
-        const px = w * 0.148; c.font = fuente(px);
-        const lineas = envolver(FRASES[it.idx], w * 0.86), lh = px * 1.02, y0 = hilo + h / 2 - (lineas.length - 1) * lh / 2;
+        // la letra se achica sola hasta que la frase entre en 3 líneas dentro del papel
+        let px = w * 0.148, lineas;
+        for (let k = 0; k < 8; k++) { c.font = fuente(px); lineas = envolver(FRASES[it.idx], w * 0.86); if (lineas.length <= 3 && lineas.every(l => c.measureText(l).width <= w * 0.9)) break; px *= 0.9; }
+        const lh = px * 1.02, y0 = hilo + h / 2 - (lineas.length - 1) * lh / 2;
         lineas.forEach((l, i) => c.fillText(l, 0, y0 + i * lh, w * 0.9));
         if (leidos.has(it.id)) { c.fillStyle = '#e0a020'; c.beginPath(); c.arc(w / 2 - 9, hilo + h - 9, 4, 0, TAU); c.fill(); }
       }
@@ -468,13 +471,13 @@
   function loop(now) {
     const t = (now - t0) / 1000, dt = Math.min(0.05, t - ultimo); ultimo = t;
     if (estado === 'ocaso') {
-      T = smooth((t - tFase) / 7);
-      if (t - tFase > 2.2) portada.classList.add('fuera');
+      T = smooth((t - tFase) / (RAPIDO ? 3 : 7));
+      if (t - tFase > (RAPIDO ? 0.8 : 2.2)) portada.classList.add('fuera');
       if (T >= 1) { T = 1; estado = 'noche'; tFase = t; portada.hidden = true; pista.classList.add('ver'); btnSeguir.hidden = false; setTimeout(() => pista.classList.remove('ver'), 9000); }
     } else if (estado === 'noche') {
       notasA = clamp((t - tFase) / 1.6);
     } else if (estado === 'alba') {
-      const k = (t - tFase) / 9; T = 1 + smooth(k); notasA = clamp(1 - (t - tFase) / 1.5);
+      const k = (t - tFase) / (RAPIDO ? 5 : 9); T = 1 + smooth(k); notasA = clamp(1 - (t - tFase) / 1.5);
       if (T > 1.55 && !petalos.length) petalos = Array.from({ length: reduce ? 20 : 55 }, () => ({ x: Math.random() * W, y: Math.random() * H - H, vy: 0.06 + Math.random() * 0.08, vx: (Math.random() - 0.5) * 0.03, r: Math.random() * TAU, vr: (Math.random() - 0.5) * 2, s: 5 + Math.random() * 7, ph: Math.random() * TAU, a: 0.75 + Math.random() * 0.25 }));
       if (T > 1.78 && fin.hidden) { fin.hidden = false; requestAnimationFrame(() => fin.classList.add('ver')); }
       if (k >= 1) { T = 2; estado = 'fin'; }
@@ -512,11 +515,12 @@
   function abrirItem(it) {
     if (it.tipo === 'f') {
       $('#notaTxt').textContent = FRASES[it.idx].replace('|', ' ');
-      nota.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => nota.classList.add('abierta')));
+      nota.hidden = false; tNota = performance.now(); requestAnimationFrame(() => requestAnimationFrame(() => nota.classList.add('abierta')));
       leidos.add(it.id); revisarProgreso();
     } else abrirTarjeta(it.idx);
   }
-  nota.addEventListener('click', () => { nota.classList.remove('abierta'); setTimeout(() => { nota.hidden = true; }, 350); });
+  let tNota = 0;   // el click que sigue al toque que la abrió no debe cerrarla
+  nota.addEventListener('click', () => { if (performance.now() - tNota < 400) return; nota.classList.remove('abierta'); setTimeout(() => { nota.hidden = true; }, 350); });
   let tarjetaIdx = -1;
   function abrirTarjeta(i) {
     tarjetaIdx = i;
